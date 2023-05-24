@@ -1,132 +1,136 @@
-#include <iostream>
-#include <cstring>
-
+#include<iostream>
+#include<cstring>
 using namespace std;
-class DisciplinaryAction{
-private:
-    char *name{},*reason{};
-    int id{},kazneti{};
 
-public:
-    DisciplinaryAction()= default;
-    DisciplinaryAction(char *name,int id,char *reason,int kazneti){
-        this->name=new char[strlen(name)+1];
-        strcpy(this->name,name);
-        this->reason=new char[strlen(reason)+1];
-        strcpy(this->reason,reason);
-        this->id=id;
-        this->kazneti=kazneti;
-
-    }
-    ~DisciplinaryAction(){
-        delete[]name;
-        delete[]reason;
-    }
-    DisciplinaryAction(const DisciplinaryAction &d){
-        name=new char[strlen(d.name)+1];
-        strcpy(name,d.name);
-        reason=new char[strlen(d.reason)+1];
-        strcpy(reason,d.reason);
-        id=d.id;
-        kazneti=d.kazneti;
-    }
-    DisciplinaryAction &operator=(const DisciplinaryAction &d){
-        if(this!=&d){
-            delete[]name;
-            delete[]reason;
-            name=new char[strlen(d.name)+1];
-            strcpy(name,d.name);
-            reason=new char[strlen(d.reason)+1];
-            strcpy(reason,d.reason);
-            id=d.id;
-            kazneti=d.kazneti;
-
-        }
-        return *this;
-    }
-    void setIndex(int idx){
-        id=idx;
-    }
-    friend ostream &operator<<(ostream &out,const DisciplinaryAction &d){
-        out<<"Student: "<<d.name<<endl;
-        out<<"Student's index: "<<d.id<<endl;
-        out<<"Reason: "<<d.reason<<endl;
-        out<<"Sessions: "<<d.kazneti<<endl;
-        return out;
-    }
-    DisciplinaryAction &operator++(){
-        ++kazneti;
-        return *this;
-    }
-    bool operator>=(DisciplinaryAction &d)const{
-        if(kazneti>=d.kazneti)return true;
-        return false;
-    }
+class UserAlreadyExistsException {
+//TODO
 };
 
-int main (){
+class UserNotFoundException {
+//TODO
+};
 
-    int n;
-    cin >> n;
+class FriendsLimitExceededException {
+//TODO
+};
 
-    /// Testing Default constructor and equal operator
-    /// Array input
+class User {
+private:
+    char username[50];
+    int age;
+    int friends;
 
-    DisciplinaryAction arr[n];
-
-    for (int i = 0; i < n; i++) {
-        char name[100];
-        char reason[100];
-        int index;
-        int sessions;
-
-        cin >> name >> index >> reason >> sessions;
-
-        arr[i] = DisciplinaryAction(name, index, reason, sessions);
+public:
+    User(char *username = "", int age = 18) : age(age) {
+        strcpy(this->username, username);
+        friends = 0;
     }
 
-    cout << "-- Testing operator = & operator <<  --\n";
-    cout << arr[0];
+    friend ostream &operator<<(ostream &os, const User &user) {
+        os << "Username: " << user.username << " Age: " << user.age << " # of friends: " << user.friends;
+        return os;
+    }
 
-    /// Testing copy constructor & set index
+    User &operator++() {
+        ++friends;
+        return *this;
+    }
 
-    DisciplinaryAction merka(arr[0]);
-    merka.setIndex(112233);
-
-    cout << "\n-- Testing copy constructor & set index --\n";
-    cout << "-------------\n";
-    cout << "Source:\n";
-    cout << "-------------\n";
-    cout << arr[0];
-
-    cout << "\n-------------\n";
-    cout << "Copied and edited:\n";
-    cout << "-------------\n";
-    cout << merka;
-
-    /// Testing if array is OK
-
-    cout << "\n-- Testing if array was inputted correctly --\n";
-
-    for (int i = 0; i < n; i++)
-        cout << arr[i];
+    friend class SocialNetwork;
 
 
-    cout << "\nTesting operator ++ and <<" << endl;
-    for (int i = 0; i < n; i++)
-        //       cout << (++arr[i]);
+    static void setLimit(int maxFriends);
+};
 
+class SocialNetwork {
+private:
+    User *users;
+    int n;
+public:
+    SocialNetwork() {
+        n = 0;
+        users = new User[n];
+    }
 
-        cout << "\nTesting operator >=" << endl;
-    for (int i = 0; i < n; i++) {
-        for (int j = 0; j < n; j++) {
-            if (i != j) {
-                //    cout << i << " " << ((arr[i] >= arr[j]) ? ">= " : "< ") << j << endl;
+    SocialNetwork &operator+=(User &u) {
+
+        User *tmp = new User[n + 1];
+        for (int i = 0; i < n; i++) {
+            tmp[i] = users[i];
+        }
+        tmp[n++] = u;
+        delete[] users;
+        users = tmp;
+        return *this;
+    }
+
+    void friendRequest(char *firstUsername, char *secondUsername) {
+        for (int i = 0; i < n; i++) {
+            if (strcmp(users[i].username, firstUsername) == 0) {
+                for (int j = 0; j < n; j++) {
+                    if (strcmp(users[j].username, secondUsername) == 0) {
+                        ++users[i];
+                        ++users[j];
+                        return;
+                    }
+                }
             }
         }
     }
 
+    friend ostream &operator<<(ostream &os, const SocialNetwork &network) {
+        os << "Users: " << endl;
+        for (int i=0;i<network.n;i++) {
+            os << network. users[i] << endl;
+        }
+        return os;
+    }
+};
+
+void User::setLimit(int maxFriends) {
+
+}
 
 
+int main() {
+    SocialNetwork sn;
+    int n;
+    cin >> n;
+    for (int i=0;i<n;i++){
+        char username[50]; int age;
+        cin >> username >> age;
+        User u(username, age);
+        sn += u;
+
+    }
+
+    cout << "Registration of users " << endl;
+    cout << sn << endl;
+    cout << "Friend requests " << endl;
+
+    int friendships;
+    cin >> friendships;
+    for (int i=0;i<friendships;i++){
+        char username1[50], username2[50];
+        cin >> username1 >> username2;
+        sn.friendRequest(username1, username2);
+
+    }
+
+    cout << sn << endl;
+
+    cout << "CHANGE STATIC VALUE" << endl;
+
+    int maxFriends;
+    cin >> maxFriends;
+    cin >> friendships;
+    User::setLimit(maxFriends);
+    for (int i=0;i<friendships;i++){
+        char username1[50], username2[50];
+        cin >> username1 >> username2;
+        sn.friendRequest(username1, username2);
+
+    }
+    cout << sn;
     return 0;
 }
